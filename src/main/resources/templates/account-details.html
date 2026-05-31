@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Details - SmartBank</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root{--primary:#6366f1;--primary-light:#818cf8;--accent:#a78bfa;--accent2:#f472b6;--bg-dark:#0f172a;--bg-surface:#1e293b;--bg-card:#1e293b;--glass:rgba(255,255,255,0.04);--glass-border:rgba(255,255,255,0.08);--text-light:#e2e8f0;--text-muted:#94a3b8;--success:#34d399;--danger:#f87171;}
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Inter',sans-serif;background:var(--bg-dark);color:var(--text-light);overflow-x:hidden;}
+        .sidebar{position:fixed;top:0;left:0;width:260px;height:100vh;background:var(--bg-surface);border-right:1px solid var(--glass-border);padding:24px 16px;display:flex;flex-direction:column;z-index:100;transition:transform 0.3s;}
+        .sidebar-brand{display:flex;align-items:center;gap:10px;padding:8px 12px;margin-bottom:32px;text-decoration:none;}
+        .sidebar-brand i{font-size:1.4rem;color:var(--primary-light);}
+        .sidebar-brand span{font-size:1.3rem;font-weight:800;background:linear-gradient(135deg,var(--primary-light),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+        .sidebar-nav{flex:1;display:flex;flex-direction:column;gap:4px;}
+        .nav-item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:12px;color:var(--text-muted);text-decoration:none;font-weight:500;font-size:0.95rem;transition:all 0.3s;}
+        .nav-item i{font-size:1.1rem;width:20px;text-align:center;}
+        .nav-item:hover{color:var(--text-light);background:rgba(99,102,241,0.1);}
+        .nav-item.active{color:white;background:linear-gradient(135deg,var(--primary),var(--accent));box-shadow:0 4px 16px rgba(99,102,241,0.3);}
+        .main-content{margin-left:260px;min-height:100vh;padding:32px;}
+
+        /* Account Header Card */
+        .account-header{background:var(--bg-card);border:1px solid var(--glass-border);border-radius:24px;padding:36px;position:relative;overflow:hidden;margin-bottom:28px;}
+        .account-header::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--primary),var(--accent),var(--accent2));}
+        .account-meta{display:flex;align-items:center;gap:16px;margin-bottom:24px;flex-wrap:wrap;}
+        .account-type-badge{display:inline-flex;padding:6px 16px;border-radius:10px;font-size:0.8rem;font-weight:600;text-transform:uppercase;letter-spacing:1px;background:rgba(99,102,241,0.15);color:var(--primary-light);}
+        .account-status{display:inline-flex;align-items:center;gap:6px;padding:6px 16px;border-radius:10px;font-size:0.8rem;font-weight:600;background:rgba(52,211,153,0.15);color:var(--success);}
+        .account-status .dot{width:8px;height:8px;border-radius:50%;background:var(--success);animation:pulse 2s infinite;}
+        @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+        .account-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+        .info-item{display:flex;flex-direction:column;gap:4px;}
+        .info-label{font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;font-weight:600;}
+        .info-value{font-size:1rem;font-weight:600;}
+        .info-value.account-num{font-family:'Courier New',monospace;letter-spacing:2px;font-size:1.1rem;cursor:pointer;transition:color 0.3s;}
+        .info-value.account-num:hover{color:var(--primary-light);}
+        .balance-display{font-size:3rem;font-weight:900;background:linear-gradient(135deg,#fff,var(--text-muted));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-top:8px;}
+
+        /* Transaction History */
+        .transactions-card{background:var(--bg-card);border:1px solid var(--glass-border);border-radius:24px;padding:32px;position:relative;overflow:hidden;}
+        .transactions-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;}
+        .transactions-header h2{font-size:1.3rem;font-weight:700;}
+        .txn-count{font-size:0.85rem;color:var(--text-muted);background:var(--glass);padding:6px 14px;border-radius:8px;}
+        .txn-list{display:flex;flex-direction:column;gap:4px;}
+        .txn-item{display:flex;align-items:center;padding:16px;border-radius:14px;transition:background 0.3s;gap:16px;}
+        .txn-item:hover{background:rgba(255,255,255,0.03);}
+        .txn-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+        .txn-icon.debit{background:rgba(248,113,113,0.12);color:var(--danger);}
+        .txn-icon.credit{background:rgba(52,211,153,0.12);color:var(--success);}
+        .txn-icon.bill{background:rgba(244,114,182,0.12);color:var(--accent2);}
+        .txn-details{flex:1;min-width:0;}
+        .txn-type{font-weight:600;font-size:0.95rem;margin-bottom:2px;}
+        .txn-desc{font-size:0.85rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+        .txn-recipient{font-size:0.8rem;color:var(--accent);margin-top:2px;}
+        .txn-right{text-align:right;flex-shrink:0;}
+        .txn-amount{font-weight:700;font-size:1.05rem;}
+        .txn-amount.debit{color:var(--danger);}
+        .txn-amount.credit{color:var(--success);}
+        .txn-date{font-size:0.75rem;color:var(--text-muted);margin-top:4px;}
+        .txn-ref{font-size:0.7rem;color:rgba(148,163,184,0.6);font-family:'Courier New',monospace;cursor:pointer;}
+        .txn-ref:hover{color:var(--primary-light);}
+        .empty-state{text-align:center;padding:60px 20px;color:var(--text-muted);}
+        .empty-state i{font-size:3rem;margin-bottom:16px;opacity:0.3;}
+        .btn-back-main{display:inline-flex;align-items:center;gap:8px;margin-top:28px;padding:14px 28px;border-radius:14px;background:var(--glass);border:1px solid var(--glass-border);color:var(--text-muted);text-decoration:none;font-weight:600;transition:all 0.3s;}
+        .btn-back-main:hover{background:rgba(255,255,255,0.08);color:var(--text-light);}
+        .copy-toast{position:fixed;bottom:24px;right:24px;background:rgba(52,211,153,0.15);border:1px solid rgba(52,211,153,0.3);color:var(--success);padding:14px 24px;border-radius:14px;font-size:0.9rem;font-weight:500;display:none;animation:toastIn 0.3s ease-out;z-index:9999;backdrop-filter:blur(10px);}
+        @keyframes toastIn{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+
+        .mobile-toggle{display:none;position:fixed;top:16px;left:16px;z-index:200;background:var(--bg-surface);border:1px solid var(--glass-border);border-radius:12px;padding:10px 14px;color:var(--text-light);font-size:1.2rem;cursor:pointer;}
+        .sidebar-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99;}
+        @media(max-width:768px){.sidebar{transform:translateX(-100%);}.sidebar.open{transform:translateX(0);}.sidebar-overlay.open{display:block;}.main-content{margin-left:0;padding:20px;}.mobile-toggle{display:block;}.account-info-grid{grid-template-columns:1fr;}.balance-display{font-size:2.2rem;}}
+    </style>
+</head>
+<body>
+    <button class="mobile-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    <aside class="sidebar" id="sidebar">
+        <a th:href="@{/}" class="sidebar-brand"><i class="fas fa-shield-halved"></i><span>SmartBank</span></a>
+        <nav class="sidebar-nav">
+            <a th:href="@{/dashboard}" class="nav-item active"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a th:href="@{/transfer}" class="nav-item"><i class="fas fa-paper-plane"></i> Transfer</a>
+            <a th:href="@{/bills}" class="nav-item"><i class="fas fa-receipt"></i> Pay Bills</a>
+            <a th:href="@{/qr-payment}" class="nav-item"><i class="fas fa-qrcode"></i> QR Payment</a>
+            <a th:href="@{/schedule-transfer}" class="nav-item"><i class="fas fa-calendar-check"></i> Schedule</a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <!-- Account Header -->
+        <div class="account-header">
+            <div class="account-meta">
+                <span class="account-type-badge" th:text="${account.accountType}">SAVINGS</span>
+                <span class="account-status"><span class="dot"></span> Active</span>
+            </div>
+            <div class="account-info-grid">
+                <div>
+                    <div class="info-item">
+                        <span class="info-label">Account Number</span>
+                        <span class="info-value account-num" th:text="${account.accountNumber}" onclick="copyText(this)" title="Click to copy">SB00000000000000</span>
+                    </div>
+                    <div class="info-item" style="margin-top:16px;">
+                        <span class="info-label">Created</span>
+                        <span class="info-value" th:text="${#temporals.format(account.createdAt, 'dd MMM yyyy')}">01 Jan 2026</span>
+                    </div>
+                </div>
+                <div style="text-align:right;">
+                    <span class="info-label">Current Balance</span>
+                    <div class="balance-display" th:text="'₹' + ${#numbers.formatDecimal(account.balance, 1, 'COMMA', 2, 'POINT')}">₹0.00</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transactions -->
+        <div class="transactions-card">
+            <div class="transactions-header">
+                <h2><i class="fas fa-clock-rotate-left" style="color:var(--primary-light)"></i> Transaction History</h2>
+                <span class="txn-count" th:text="${transactions.size()} + ' transactions'">0 transactions</span>
+            </div>
+
+            <div th:if="${transactions.isEmpty()}" class="empty-state">
+                <i class="fas fa-receipt"></i>
+                <p>No transactions yet for this account.</p>
+            </div>
+
+            <div class="txn-list">
+                <div th:each="transaction : ${transactions}" class="txn-item">
+                    <div th:classappend="${transaction.transactionType == 'TRANSFER' ? 'debit' : (transaction.transactionType == 'BILL_PAYMENT' ? 'bill' : 'credit')}" class="txn-icon">
+                        <i th:classappend="${transaction.transactionType == 'TRANSFER' ? 'fa-arrow-up-right' : (transaction.transactionType == 'BILL_PAYMENT' ? 'fa-receipt' : 'fa-arrow-down-left')}" class="fas"></i>
+                    </div>
+                    <div class="txn-details">
+                        <div class="txn-type" th:text="${transaction.transactionType}">TRANSFER</div>
+                        <div class="txn-desc" th:text="${transaction.description}">Description</div>
+                        <div th:if="${transaction.recipientName}" class="txn-recipient">
+                            <i class="fas fa-user" style="font-size:0.7rem"></i> <span th:text="${transaction.recipientName}">Name</span>
+                        </div>
+                    </div>
+                    <div class="txn-right">
+                        <div th:classappend="${transaction.transactionType == 'TRANSFER' ? 'debit' : 'credit'}" class="txn-amount"
+                             th:text="${(transaction.transactionType == 'TRANSFER' ? '-' : '+') + '₹' + #numbers.formatDecimal(transaction.amount, 1, 'COMMA', 2, 'POINT')}">₹0.00</div>
+                        <div class="txn-date" th:text="${#temporals.format(transaction.transactionDate, 'dd MMM yyyy, HH:mm')}">01 Jan 2026</div>
+                        <div class="txn-ref" th:text="${transaction.referenceNumber}" onclick="copyText(this)" title="Click to copy">TXN000</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <a th:href="@{/dashboard}" class="btn-back-main"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+    </main>
+
+    <!-- Copy Toast -->
+    <div class="copy-toast" id="copyToast"><i class="fas fa-check-circle"></i> Copied to clipboard!</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('open');}
+        function copyText(el){
+            navigator.clipboard.writeText(el.textContent.trim());
+            const toast=document.getElementById('copyToast');
+            toast.style.display='flex';toast.style.alignItems='center';toast.style.gap='8px';
+            setTimeout(()=>{toast.style.display='none';},2000);
+        }
+        // Animate balance
+        document.querySelectorAll('.balance-display').forEach(el=>{
+            const text=el.textContent;const num=parseFloat(text.replace(/[^0-9.]/g,''));
+            if(isNaN(num))return;const prefix=text.match(/^[^0-9]*/)[0];
+            let start=performance.now();
+            function anim(now){
+                const p=Math.min((now-start)/1200,1);const e=1-Math.pow(1-p,3);
+                el.textContent=prefix+(num*e).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+                if(p<1)requestAnimationFrame(anim);
+            }
+            requestAnimationFrame(anim);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Run SmartBank",
+			"type": "shell",
+			"command": "java",
+			"args": [
+				"-cp",
+				"target/classes:target/lib/*",
+				"com.smartbank.SmartBankApplication"
+			],
+			"isBackground": true,
+			"group": "none"
+		}
+	]
+}

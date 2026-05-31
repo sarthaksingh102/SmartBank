@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fund Transfer - SmartBank</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root{--primary:#6366f1;--primary-light:#818cf8;--accent:#a78bfa;--accent2:#f472b6;--bg-dark:#0f172a;--bg-surface:#1e293b;--bg-card:#1e293b;--glass:rgba(255,255,255,0.04);--glass-border:rgba(255,255,255,0.08);--text-light:#e2e8f0;--text-muted:#94a3b8;--success:#34d399;--danger:#f87171;}
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Inter',sans-serif;background:var(--bg-dark);color:var(--text-light);overflow-x:hidden;}
+        .sidebar{position:fixed;top:0;left:0;width:260px;height:100vh;background:var(--bg-surface);border-right:1px solid var(--glass-border);padding:24px 16px;display:flex;flex-direction:column;z-index:100;transition:transform 0.3s;}
+        .sidebar-brand{display:flex;align-items:center;gap:10px;padding:8px 12px;margin-bottom:32px;text-decoration:none;}
+        .sidebar-brand i{font-size:1.4rem;color:var(--primary-light);}
+        .sidebar-brand span{font-size:1.3rem;font-weight:800;background:linear-gradient(135deg,var(--primary-light),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+        .sidebar-nav{flex:1;display:flex;flex-direction:column;gap:4px;}
+        .nav-item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:12px;color:var(--text-muted);text-decoration:none;font-weight:500;font-size:0.95rem;transition:all 0.3s;}
+        .nav-item i{font-size:1.1rem;width:20px;text-align:center;}
+        .nav-item:hover{color:var(--text-light);background:rgba(99,102,241,0.1);}
+        .nav-item.active{color:white;background:linear-gradient(135deg,var(--primary),var(--accent));box-shadow:0 4px 16px rgba(99,102,241,0.3);}
+        .main-content{margin-left:260px;min-height:100vh;padding:32px;display:flex;justify-content:center;}
+        .form-wrapper{width:100%;max-width:560px;padding-top:16px;}
+        .page-header{margin-bottom:32px;}
+        .page-header h1{font-size:1.8rem;font-weight:800;margin-bottom:4px;}
+        .page-header p{color:var(--text-muted);font-size:0.95rem;}
+        .form-card{background:var(--bg-card);border:1px solid var(--glass-border);border-radius:24px;padding:36px;position:relative;overflow:hidden;}
+        .form-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--primary),var(--accent));}
+        .form-group{margin-bottom:20px;}
+        .form-group label{display:block;color:var(--text-muted);font-size:0.8rem;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;}
+        .form-input{width:100%;background:rgba(255,255,255,0.05);border:2px solid rgba(255,255,255,0.08);border-radius:14px;padding:14px 16px;color:var(--text-light);font-size:1rem;font-family:'Inter',sans-serif;transition:all 0.3s;outline:none;}
+        .form-input:focus{border-color:var(--primary);box-shadow:0 0 20px rgba(99,102,241,0.15);background:rgba(255,255,255,0.08);}
+        .form-input::placeholder{color:rgba(148,163,184,0.4);}
+        select.form-input{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center;}
+        select.form-input option{background:var(--bg-surface);color:var(--text-light);}
+        textarea.form-input{resize:vertical;min-height:80px;}
+        .btn-submit{width:100%;padding:16px;border:none;border-radius:14px;background:linear-gradient(135deg,var(--primary),var(--accent));color:white;font-size:1.05rem;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;transition:all 0.4s cubic-bezier(0.68,-0.55,0.265,1.55);margin-top:8px;}
+        .btn-submit:hover{transform:translateY(-3px);box-shadow:0 15px 40px rgba(99,102,241,0.4);}
+        .btn-back{display:block;text-align:center;margin-top:16px;padding:14px;border-radius:14px;background:var(--glass);border:1px solid var(--glass-border);color:var(--text-muted);text-decoration:none;font-weight:600;font-size:0.95rem;transition:all 0.3s;}
+        .btn-back:hover{background:rgba(255,255,255,0.08);color:var(--text-light);}
+        .alert-box{padding:14px 18px;border-radius:14px;margin-bottom:24px;font-size:0.9rem;font-weight:500;display:flex;align-items:center;gap:10px;animation:slideIn 0.4s ease-out;}
+        @keyframes slideIn{from{opacity:0;transform:translateX(-20px);}to{opacity:1;transform:translateX(0);}}
+        .alert-danger{background:rgba(248,113,113,0.15);border:1px solid rgba(248,113,113,0.3);color:var(--danger);}
+        .alert-success{background:rgba(52,211,153,0.15);border:1px solid rgba(52,211,153,0.3);color:var(--success);}
+
+        /* Confirmation Modal */
+        .modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+        .modal-overlay.show{display:flex;}
+        .modal-card{background:var(--bg-surface);border:1px solid var(--glass-border);border-radius:24px;padding:36px;max-width:440px;width:90%;animation:modalIn 0.3s ease-out;}
+        @keyframes modalIn{from{opacity:0;transform:scale(0.9);}to{opacity:1;transform:scale(1);}}
+        .modal-card h3{font-size:1.3rem;font-weight:700;margin-bottom:8px;}
+        .modal-card p{color:var(--text-muted);margin-bottom:20px;}
+        .modal-detail{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--glass-border);font-size:0.9rem;}
+        .modal-detail:last-of-type{border-bottom:none;}
+        .modal-detail span:first-child{color:var(--text-muted);}
+        .modal-detail span:last-child{font-weight:600;}
+        .modal-btns{display:flex;gap:12px;margin-top:24px;}
+        .modal-btns button{flex:1;padding:14px;border-radius:12px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;font-size:0.95rem;transition:all 0.3s;}
+        .btn-cancel-modal{background:var(--glass);border:1px solid var(--glass-border);color:var(--text-muted);}
+        .btn-cancel-modal:hover{background:rgba(255,255,255,0.08);color:var(--text-light);}
+        .btn-confirm-modal{background:linear-gradient(135deg,var(--primary),var(--accent));border:none;color:white;}
+        .btn-confirm-modal:hover{box-shadow:0 8px 24px rgba(99,102,241,0.4);}
+
+        .mobile-toggle{display:none;position:fixed;top:16px;left:16px;z-index:200;background:var(--bg-surface);border:1px solid var(--glass-border);border-radius:12px;padding:10px 14px;color:var(--text-light);font-size:1.2rem;cursor:pointer;}
+        .sidebar-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99;}
+        @media(max-width:768px){.sidebar{transform:translateX(-100%);}.sidebar.open{transform:translateX(0);}.sidebar-overlay.open{display:block;}.main-content{margin-left:0;padding:20px;}.mobile-toggle{display:block;}.form-wrapper{padding-top:48px;}}
+    </style>
+</head>
+<body>
+    <button class="mobile-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    <aside class="sidebar" id="sidebar">
+        <a th:href="@{/}" class="sidebar-brand"><i class="fas fa-shield-halved"></i><span>SmartBank</span></a>
+        <nav class="sidebar-nav">
+            <a th:href="@{/dashboard}" class="nav-item"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a th:href="@{/transfer}" class="nav-item active"><i class="fas fa-paper-plane"></i> Transfer</a>
+            <a th:href="@{/bills}" class="nav-item"><i class="fas fa-receipt"></i> Pay Bills</a>
+            <a th:href="@{/qr-payment}" class="nav-item"><i class="fas fa-qrcode"></i> QR Payment</a>
+            <a th:href="@{/schedule-transfer}" class="nav-item"><i class="fas fa-calendar-check"></i> Schedule</a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <div class="form-wrapper">
+            <div class="page-header">
+                <h1><i class="fas fa-paper-plane" style="color:var(--primary-light)"></i> Fund Transfer</h1>
+                <p>Send money instantly to any SmartBank account</p>
+            </div>
+
+            <div class="form-card">
+                <div th:if="${error}" class="alert-box alert-danger"><i class="fas fa-exclamation-circle"></i> <span th:text="${error}"></span></div>
+                <div th:if="${success}" class="alert-box alert-success"><i class="fas fa-check-circle"></i> <span th:text="${success}"></span></div>
+
+                <form method="POST" th:action="@{/transfer}" th:object="${transfer}" id="transferForm">
+                    <div class="form-group">
+                        <label>From Account</label>
+                        <select th:field="*{senderAccountNumber}" class="form-input" required id="senderSelect">
+                            <option value="">Select your account</option>
+                            <option th:each="account : ${accounts}" th:value="${account.accountNumber}"
+                                    th:text="${account.accountNumber + ' — ' + account.accountType + ' (₹' + #numbers.formatDecimal(account.balance, 1, 'COMMA', 2, 'POINT') + ')'}"></option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>To Account</label>
+                        <input type="text" th:field="*{recipientAccountNumber}" class="form-input" placeholder="Recipient account number" required id="recipientInput">
+                    </div>
+                    <div class="form-group">
+                        <label>Amount (₹)</label>
+                        <input type="number" th:field="*{amount}" class="form-input" placeholder="0.00" step="0.01" min="0.01" required id="amountInput">
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea th:field="*{description}" class="form-input" placeholder="What's this transfer for?" rows="3" required id="descInput"></textarea>
+                    </div>
+                    <button type="button" class="btn-submit" onclick="showConfirmation()">
+                        <i class="fas fa-paper-plane"></i> Transfer Now
+                    </button>
+                    <a th:href="@{/dashboard}" class="btn-back"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- Confirmation Modal -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal-card">
+            <h3><i class="fas fa-shield-halved" style="color:var(--primary-light)"></i> Confirm Transfer</h3>
+            <p>Please review the details before proceeding</p>
+            <div class="modal-detail"><span>From Account</span><span id="modalFrom">—</span></div>
+            <div class="modal-detail"><span>To Account</span><span id="modalTo">—</span></div>
+            <div class="modal-detail"><span>Amount</span><span id="modalAmount" style="color:var(--success);font-size:1.1rem;">—</span></div>
+            <div class="modal-detail"><span>Description</span><span id="modalDesc">—</span></div>
+            <div class="modal-btns">
+                <button class="btn-cancel-modal" onclick="hideConfirmation()">Cancel</button>
+                <button class="btn-confirm-modal" onclick="submitTransfer()">
+                    <span id="confirmText">Confirm Transfer</span>
+                    <span id="confirmSpinner" style="display:none"><i class="fas fa-spinner fa-spin"></i></span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('open');}
+        function showConfirmation(){
+            const form = document.getElementById('transferForm');
+            if(!form.checkValidity()){form.reportValidity();return;}
+            document.getElementById('modalFrom').textContent = document.getElementById('senderSelect').value;
+            document.getElementById('modalTo').textContent = document.getElementById('recipientInput').value;
+            document.getElementById('modalAmount').textContent = '₹' + parseFloat(document.getElementById('amountInput').value).toLocaleString('en-IN',{minimumFractionDigits:2});
+            document.getElementById('modalDesc').textContent = document.getElementById('descInput').value;
+            document.getElementById('confirmModal').classList.add('show');
+        }
+        function hideConfirmation(){document.getElementById('confirmModal').classList.remove('show');}
+        function submitTransfer(){
+            document.getElementById('confirmText').style.display='none';
+            document.getElementById('confirmSpinner').style.display='inline';
+            document.getElementById('transferForm').submit();
+        }
+    </script>
+</body>
+</html>
