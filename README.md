@@ -281,13 +281,25 @@ The project includes security and integration tests. Run tests with:
 mvn test
 ```
 
-## Deployment
+## Cloud Deployment (Render - 100% Free)
 
-For production deployment:
-1. Build WAR/JAR file: `mvn clean package`
-2. Configure production database
-3. Set environment variables for security
-4. Deploy to application server (Tomcat, etc.)
+This application is fully configured for a free cloud deployment on **Render.com** using a multi-stage Docker build and a PostgreSQL database.
+
+### 1. Create the Database
+1. Go to [Render.com](https://render.com/) and click **New -> PostgreSQL**.
+2. Name it (e.g., `smartbank-db`), select the **Free** plan, and click **Create Database**.
+3. Once created, copy the **Internal Database URL** (begins with `postgres://`).
+
+### 2. Deploy the Application
+1. On your Render Dashboard, click **New -> Web Service**.
+2. Connect your GitHub account and select the `SmartBank` repository.
+3. In the "Language" or "Environment" dropdown, select **Docker**.
+4. Under **Environment Variables**, add the following:
+   - `SPRING_PROFILES_ACTIVE` = `prod`
+   - `DB_URL` = *(Paste the Internal Database URL from Step 1)*
+5. Ensure the **Free** plan is selected, and click **Create Web Service**.
+
+Render will automatically use the included `Dockerfile` to build the Java application and launch it!
 
 ## Future Enhancements
 
